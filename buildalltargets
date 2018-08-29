@@ -1,0 +1,21 @@
+#!/bin/sh
+#
+OPTIONS=""
+REPORT_FILE="/tmp/buildalltargets.log"
+start=$(date +%s)
+CORES=$(expr $(nproc) + 1)
+for TARGET in targets/*; do
+  if [ ${TARGET#targets/} = "generic" ] || [ ${TARGET#targets/} = "targets.mk" ] || [ ${TARGET#targets/} = "x86.inc" ]; then
+    continue
+  fi
+  echo "################# $(date) start building target ${TARGET#targets/} ###########################"
+  make -j$CORES $OPTIONS GLUON_TARGET=${TARGET#targets/} || { echo "--- Erstellung des Targets ${TARGET#targets/} fehlgeschlagen!" >> ${REPORT_FILE} ; continue; }
+  echo "+++ Erstellung des Targets ${TARGET#targets/} erfolgreich!" >> ${REPORT_FILE}
+done && echo "Alle Targets wurden im ordner output/ erstellt."
+echo -n "beendet: "; date
+echo "Dauer: $((($(date +%s)-start)/60)) Minuten"
+echo
+echo "Ergebnis:"
+echo "---------"
+cat ${REPORT_FILE}
+rm ${REPORT_FILE}
